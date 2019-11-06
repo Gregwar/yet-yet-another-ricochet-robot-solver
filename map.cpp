@@ -1,3 +1,4 @@
+#include <map>
 #include "map.h"
 #include <iostream>
 #include <stdio.h>
@@ -61,11 +62,12 @@ void Map::print() {
   }
 }
 
-Position Map::move(Robots &robots, int robot, int move) {
+bool Map::move(Robots &robots, int robot, int move) {
   Position position = robots.positions[robot];
-  int moves = 0;
+  bool moved = false;
   bool isMoving = true;
-//   std::cout << position.x << " " << position.y << std::endl;
+  // std::cout << "Move: " << move << " "  << position.x << " " << position.y <<
+  // std::endl;
 
   while (isMoving) {
     if (data[position.x][position.y] & move) {
@@ -88,20 +90,22 @@ Position Map::move(Robots &robots, int robot, int move) {
       }
 
       if (isMoving) {
+        moved = true;
         position = tmp;
       }
     }
   }
 
   robots.positions[robot] = position;
-  return position;
+
+  return moved;
 }
 
 bool Position::operator==(const Position &other) {
   return x == other.x && y == other.y;
 }
 
-bool Robots::operator<(const Robots &other) {
+bool Robots::operator<(const Robots &other) const {
   for (int k = 0; k < ROBOT_COUNTS; k++) {
     if (positions[k].x != other.positions[k].x) {
       return positions[k].x < other.positions[k].x;
@@ -109,6 +113,51 @@ bool Robots::operator<(const Robots &other) {
 
     if (positions[k].y != other.positions[k].y) {
       return positions[k].y < other.positions[k].y;
+    }
+  }
+
+  return false;
+}
+
+// Number of moves for a given robots position
+std::map<Robots, int> robotsToMove;
+
+bool canReach(Map &map, Robots &robots, int robot, int moves, int depth) {
+  if (moves > 0) {
+    for (int k = 0; k < ROBOT_COUNTS; k++) {
+      if (moves == 1 && k != robot) {
+        // Only one move is remaining, we can only use the final robot
+        continue;
+      }
+
+      for (int move = 0; move < 4; move++) {
+        Robots tmp = robots;
+
+        if (map.move(tmp, k, 1 << move)) {
+            if (robotsToMove.count(tmp) && robotsToMove[tmp] < depth) {
+                // continue;
+            }
+            robotsToMove[tmp] = depth;
+
+          if (tmp.positions[robot] == map.target ||
+              canReach(map, tmp, robot, moves - 1, depth + 1)) {
+            std::cout << "Robot: ";
+            if (k == ROBOT_RED) std::cout << "red";
+            if (k == ROBOT_GREEN) std::cout << "green";
+            if (k == ROBOT_BLUE) std::cout << "blue";
+            if (k == ROBOT_YELLOW) std::cout << "yellow";
+
+            std::cout << " Move: ";
+            if (move == 0) std::cout << "left";
+            if (move == 1) std::cout << "right";
+            if (move == 2) std::cout << "up";
+            if (move == 3) std::cout << "down";
+
+            std::cout << std::endl;
+            return true;
+          }
+        }
+      }
     }
   }
 

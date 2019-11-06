@@ -35,7 +35,7 @@ struct Position
 struct Robots
 {
     Position positions[ROBOT_COUNTS];
-    bool operator<(const Robots &other);
+    bool operator<(const Robots &other) const;
 };
 
 struct Map
@@ -49,5 +49,7 @@ struct Map
     void readFromFile(const char *filename);
     void print();
 
-    Position move(Robots &robots, int robot, int move);
+    bool move(Robots &robots, int robot, int move);
 };
+
+bool canReach(Map &map, Robots &robots, int robot, int moves, int depth=0);
