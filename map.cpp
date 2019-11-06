@@ -153,7 +153,7 @@ bool canReach(Map &map, Robots &robots, int robot, int moves, int depth) {
           }
 
           if ((reached || canReach(map, tmp, robot, moves - 1, depth + 1))
-          && (soluce == 0)
+          && (soluce == 1)
           ) {
             std::cout << "Robot: ";
             if (k == ROBOT_RED)
