@@ -1,6 +1,7 @@
 #include "map.h"
 #include <iostream>
 #include <map>
+#include <unordered_map>
 #include <stdio.h>
 
 Map::Map() {}
@@ -120,68 +121,110 @@ bool Robots::operator<(const Robots &other) const {
 }
 
 int soluce = 0;
+int nbTries = 0;
+
+struct Move {
+  int robot;
+  int move;
+  Robots result;
+};
 
 // Number of moves for a given robots position
-std::map<Robots, int> robotsToMove;
+std::unordered_map<Robots, int, KeyHasher> robotsToMove;
+std::unordered_map<Robots, std::vector<Move>, KeyHasher> possibleMovesCache;
+
+std::vector<Move> possibleMoves(Map &map, Robots &robots) {
+
+  if (!possibleMovesCache.count(robots)) {
+    std::vector<Move> result;
+
+    for (int k = 0; k < ROBOT_COUNTS; k++) {
+      for (int m = 0; m < 4; m++) {
+        Robots tmp = robots;
+        if (map.move(tmp, k, 1 << m)) {
+          Move move;
+          move.robot = k;
+          move.move = m;
+          move.result = tmp;
+          result.push_back(move);
+        }
+      }
+    }
+
+    possibleMovesCache[robots] = result;
+  }
+
+  return possibleMovesCache[robots];
+}
 
 bool canReach(Map &map, Robots &robots, int robot, int moves, int depth) {
+  nbTries++;
+  
   if (moves > 0) {
-    for (int k = 0; k < ROBOT_COUNTS; k++) {
-      if (moves == 1 && k != robot && robot != ROBOT_ANY) {
+    for (Move move : possibleMoves(map, robots)) {
+      if (moves == 1 && move.robot != robot && robot != ROBOT_ANY) {
         // Only one move is remaining, we can only use the final robot
         continue;
       }
 
-      for (int move = 0; move < 4; move++) {
-        Robots tmp = robots;
+      if (robotsToMove.count(move.result) &&
+          robotsToMove[move.result] < depth) {
+        continue;
+      }
+      robotsToMove[move.result] = depth;
 
-        if (map.move(tmp, k, 1 << move)) {
-          if (robotsToMove.count(tmp) && robotsToMove[tmp] < depth) {
-            continue;
-          }
-          robotsToMove[tmp] = depth;
+      bool reached = false;
+      if (robot == ROBOT_ANY) {
+        reached = (move.result.positions[move.robot] == map.target);
+      } else {
+        reached = (move.result.positions[robot] == map.target);
+      }
 
-          bool reached = false;
-          if (robot == ROBOT_ANY) {
-            reached = (tmp.positions[k] == map.target);
-          } else {
-            reached = (tmp.positions[robot] == map.target);
-          }
+      if (reached) {
+        soluce++;
+      }
 
-          if (reached) {
-              soluce++;
-          }
+      if ((reached ||
+           canReach(map, move.result, robot, moves - 1, depth + 1)) &&
+          (soluce == 1)) {
+        std::cout << "Robot: ";
+        if (move.robot == ROBOT_RED)
+          std::cout << "red";
+        if (move.robot == ROBOT_GREEN)
+          std::cout << "green";
+        if (move.robot == ROBOT_BLUE)
+          std::cout << "blue";
+        if (move.robot == ROBOT_YELLOW)
+          std::cout << "yellow";
 
-          if ((reached || canReach(map, tmp, robot, moves - 1, depth + 1))
-          && (soluce == 1)
-          ) {
-            std::cout << "Robot: ";
-            if (k == ROBOT_RED)
-              std::cout << "red";
-            if (k == ROBOT_GREEN)
-              std::cout << "green";
-            if (k == ROBOT_BLUE)
-              std::cout << "blue";
-            if (k == ROBOT_YELLOW)
-              std::cout << "yellow";
+        std::cout << " Move: ";
+        if (move.move == 0)
+          std::cout << "left";
+        if (move.move == 1)
+          std::cout << "right";
+        if (move.move == 2)
+          std::cout << "up";
+        if (move.move == 3)
+          std::cout << "down";
 
-            std::cout << " Move: ";
-            if (move == 0)
-              std::cout << "left";
-            if (move == 1)
-              std::cout << "right";
-            if (move == 2)
-              std::cout << "up";
-            if (move == 3)
-              std::cout << "down";
-
-            std::cout << std::endl;
-            return true;
-          }
-        }
+        std::cout << std::endl;
+        return true;
       }
     }
   }
 
   return false;
+}
+
+bool Robots::operator==(const Robots &other) const
+{
+    for (int k=0; k<ROBOT_COUNTS; k++) {
+        if (positions[k].x != other.positions[k].x || 
+        positions[k].y != other.positions[k].y
+        ) {
+            return false;
+        }
+    }
+
+    return true;
 }
