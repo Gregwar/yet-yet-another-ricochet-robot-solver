@@ -119,6 +119,8 @@ bool Robots::operator<(const Robots &other) const {
   return false;
 }
 
+int soluce = 0;
+
 // Number of moves for a given robots position
 std::map<Robots, int> robotsToMove;
 
@@ -146,7 +148,13 @@ bool canReach(Map &map, Robots &robots, int robot, int moves, int depth) {
             reached = (tmp.positions[robot] == map.target);
           }
 
-          if (reached || canReach(map, tmp, robot, moves - 1, depth + 1)) {
+          if (reached) {
+              soluce++;
+          }
+
+          if ((reached || canReach(map, tmp, robot, moves - 1, depth + 1))
+          && (soluce == 0)
+          ) {
             std::cout << "Robot: ";
             if (k == ROBOT_RED)
               std::cout << "red";

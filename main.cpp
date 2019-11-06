@@ -22,7 +22,7 @@ int main()
 
     for (int moves=1; moves<15; moves++) {
         std::cout << "Trying with " << moves << " moves..." << std::endl;
-        if (!canReach(map, robots, ROBOT_BLUE, moves)) {
+        if (!canReach(map, robots, ROBOT_GREEN, moves)) {
             std::cout << "No solution!" << std::endl;
         } else {
             break;
