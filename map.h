@@ -11,6 +11,7 @@
 #define ROBOT_GREEN  1
 #define ROBOT_BLUE   2
 #define ROBOT_YELLOW 3
+#define ROBOT_ANY    4
 
 #define MAP_NONE    0
 #define MAP_LEFT    (1<<0)

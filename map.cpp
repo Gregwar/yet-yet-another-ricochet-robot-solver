@@ -1,6 +1,6 @@
-#include <map>
 #include "map.h"
 #include <iostream>
+#include <map>
 #include <stdio.h>
 
 Map::Map() {}
@@ -125,7 +125,7 @@ std::map<Robots, int> robotsToMove;
 bool canReach(Map &map, Robots &robots, int robot, int moves, int depth) {
   if (moves > 0) {
     for (int k = 0; k < ROBOT_COUNTS; k++) {
-      if (moves == 1 && k != robot) {
+      if (moves == 1 && k != robot && robot != ROBOT_ANY) {
         // Only one move is remaining, we can only use the final robot
         continue;
       }
@@ -134,24 +134,38 @@ bool canReach(Map &map, Robots &robots, int robot, int moves, int depth) {
         Robots tmp = robots;
 
         if (map.move(tmp, k, 1 << move)) {
-            if (robotsToMove.count(tmp) && robotsToMove[tmp] < depth) {
-                // continue;
-            }
-            robotsToMove[tmp] = depth;
+          if (robotsToMove.count(tmp) && robotsToMove[tmp] < depth) {
+            continue;
+          }
+          robotsToMove[tmp] = depth;
 
-          if (tmp.positions[robot] == map.target ||
-              canReach(map, tmp, robot, moves - 1, depth + 1)) {
+          bool reached = false;
+          if (robot == ROBOT_ANY) {
+            reached = (tmp.positions[k] == map.target);
+          } else {
+            reached = (tmp.positions[robot] == map.target);
+          }
+
+          if (reached || canReach(map, tmp, robot, moves - 1, depth + 1)) {
             std::cout << "Robot: ";
-            if (k == ROBOT_RED) std::cout << "red";
-            if (k == ROBOT_GREEN) std::cout << "green";
-            if (k == ROBOT_BLUE) std::cout << "blue";
-            if (k == ROBOT_YELLOW) std::cout << "yellow";
+            if (k == ROBOT_RED)
+              std::cout << "red";
+            if (k == ROBOT_GREEN)
+              std::cout << "green";
+            if (k == ROBOT_BLUE)
+              std::cout << "blue";
+            if (k == ROBOT_YELLOW)
+              std::cout << "yellow";
 
             std::cout << " Move: ";
-            if (move == 0) std::cout << "left";
-            if (move == 1) std::cout << "right";
-            if (move == 2) std::cout << "up";
-            if (move == 3) std::cout << "down";
+            if (move == 0)
+              std::cout << "left";
+            if (move == 1)
+              std::cout << "right";
+            if (move == 2)
+              std::cout << "up";
+            if (move == 3)
+              std::cout << "down";
 
             std::cout << std::endl;
             return true;
