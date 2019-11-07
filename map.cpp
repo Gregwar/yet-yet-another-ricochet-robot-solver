@@ -106,30 +106,15 @@ bool Position::operator==(const Position &other) {
   return x == other.x && y == other.y;
 }
 
-bool Robots::operator<(const Robots &other) const {
-  for (int k = 0; k < ROBOT_COUNTS; k++) {
-    if (positions[k].x != other.positions[k].x) {
-      return positions[k].x < other.positions[k].x;
-    }
-
-    if (positions[k].y != other.positions[k].y) {
-      return positions[k].y < other.positions[k].y;
-    }
-  }
-
-  return false;
-}
-
-int nbTries = 0;
-
+/**
+ * A possible move and its result
+ */
 struct Move {
   int robot;
   int move;
   Robots result;
 };
 
-// Number of moves for a given robots position
-std::unordered_map<Robots, int, KeyHasher> robotsToMove;
 std::unordered_map<Robots, std::vector<Move>, KeyHasher> possibleMovesCache;
 
 std::vector<Move> possibleMoves(Map &map, Robots &robots) {
@@ -150,63 +135,11 @@ std::vector<Move> possibleMoves(Map &map, Robots &robots) {
       }
     }
 
+    return result;
     possibleMovesCache[robots] = result;
   }
 
   return possibleMovesCache[robots];
-}
-
-bool canReach(Map &map, Robots &robots, int robot, int moves, int depth) {
-  nbTries++;
-
-  if (robotsToMove.count(robots) && robotsToMove[robots] < depth) {
-    return false;
-  }
-  robotsToMove[robots] = depth;
-
-  if (moves > 0) {
-    for (Move move : possibleMoves(map, robots)) {
-      if (moves == 1 && move.robot != robot && robot != ROBOT_ANY) {
-        // Only one move is remaining, we can only use the final robot
-        continue;
-      }
-
-      bool reached = false;
-      if (robot == ROBOT_ANY) {
-        reached = (move.result.positions[move.robot] == map.target);
-      } else {
-        reached = (move.result.positions[robot] == map.target);
-      }
-
-      if ((reached ||
-           canReach(map, move.result, robot, moves - 1, depth + 1))) {
-        std::cout << "Robot: ";
-        if (move.robot == ROBOT_RED)
-          std::cout << "red";
-        if (move.robot == ROBOT_GREEN)
-          std::cout << "green";
-        if (move.robot == ROBOT_BLUE)
-          std::cout << "blue";
-        if (move.robot == ROBOT_YELLOW)
-          std::cout << "yellow";
-
-        std::cout << " Move: ";
-        if (move.move == 0)
-          std::cout << "left";
-        if (move.move == 1)
-          std::cout << "right";
-        if (move.move == 2)
-          std::cout << "up";
-        if (move.move == 3)
-          std::cout << "down";
-
-        std::cout << std::endl;
-        return true;
-      }
-    }
-  }
-
-  return false;
 }
 
 bool Robots::operator==(const Robots &other) const {
@@ -218,4 +151,84 @@ bool Robots::operator==(const Robots &other) const {
   }
 
   return true;
+}
+
+void printMove(int robot, int move) {
+  std::cout << "Robot: ";
+  if (robot == ROBOT_RED)
+    std::cout << "red";
+  if (robot == ROBOT_GREEN)
+    std::cout << "green";
+  if (robot == ROBOT_BLUE)
+    std::cout << "blue";
+  if (robot == ROBOT_YELLOW)
+    std::cout << "yellow";
+
+  std::cout << " Move: ";
+  if (move == 0)
+    std::cout << "left";
+  if (move == 1)
+    std::cout << "right";
+  if (move == 2)
+    std::cout << "up";
+  if (move == 3)
+    std::cout << "down";
+
+  std::cout << std::endl;
+}
+
+struct PreviousStateLink {
+  int lastRobot;
+  int lastMove;
+  Robots lastRobots;
+};
+
+std::unordered_map<Robots, PreviousStateLink, KeyHasher> previousStates;
+
+void printSolution(PreviousStateLink s) {
+  if (s.lastRobot >= 0) {
+    printSolution(previousStates[s.lastRobots]);
+    printMove(s.lastRobot, s.lastMove);
+  }
+}
+
+std::vector<Robots> solve(Map &map, int robot, std::vector<Robots> lastStage) {
+  std::vector<Robots> newRobots;
+
+  for (Robots robots : lastStage) {
+    for (Move move : possibleMoves(map, robots)) {
+      if (!previousStates.count(move.result)) {
+        PreviousStateLink s;
+        s.lastRobot = move.robot;
+        s.lastMove = move.move;
+        s.lastRobots = robots;
+        newRobots.push_back(move.result);
+        previousStates[move.result] = s;
+
+        if (move.result.positions[robot] == map.target) {
+          std::cout << "Found a solution:" << std::endl;
+          printSolution(s);
+          exit(0);
+        }
+      }
+    }
+  }
+
+  return newRobots;
+}
+
+std::vector<Robots> solve(Map &map, int robot) {
+  std::vector<Robots> positions;
+  positions.push_back(map.initialRobots);
+  PreviousStateLink s;
+  s.lastRobot = -1;
+  previousStates[map.initialRobots] = s;
+
+  int moves = 1;
+  while (true) {
+    std::cout << "Trying for " << moves << " moves (" << positions.size() << ")"
+              << std::endl;
+    moves += 1;
+    positions = solve(map, robot, positions);
+  }
 }

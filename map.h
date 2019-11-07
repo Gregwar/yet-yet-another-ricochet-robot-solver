@@ -37,7 +37,6 @@ struct Position {
 
 struct Robots {
   Position positions[ROBOT_COUNTS];
-  bool operator<(const Robots &other) const;
   bool operator==(const Robots &other) const;
 };
 
@@ -73,3 +72,9 @@ bool canReach(Map &map, Robots &robots, int robot, int moves, int depth = 0);
 
 extern int nbTries;
 extern std::unordered_map<Robots, int, KeyHasher> robotsToMove;
+
+
+
+std::vector<Robots> solve(Map &map, int robot, std::vector<Robots> lastStage);
+std::vector<Robots> solve(Map &map, int robot);
+

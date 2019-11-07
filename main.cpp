@@ -20,12 +20,16 @@ int main()
     //     std::cout << "REACHED!" << std::endl;
     // }
 
+    solve(map, ROBOT_GREEN);
+
+    /*
     for (int moves=1; moves<15; moves++) {
         std::cout << "Trying with " << moves << " moves..." << std::endl;
         if (!canReach(map, robots, ROBOT_GREEN, moves)) {
-            std::cout << "No solution (tries: " << nbTries << ")!" << std::endl;
+            std::cout << "No solution (tries: " << robotsToMove.size() << ")!" << std::endl;
         } else {
             break;
         }
     }
+    */
 }
