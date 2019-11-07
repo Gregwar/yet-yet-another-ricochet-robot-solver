@@ -11,7 +11,10 @@ Map::Map() {}
 void Map::readFromFile(const char *filename) {
   FILE *f = fopen(filename, "rb");
   if (f) {
-    fread(data, MAP_WIDTH, MAP_HEIGHT, f);
+    if (fread(data, MAP_WIDTH, MAP_HEIGHT, f) != MAP_WIDTH*MAP_HEIGHT) {
+        std::cerr << "Can't load map!" << std::endl;
+        exit(0);
+    }
   } else {
     std::cerr << "Can't read file " << filename << std::endl;
   }
@@ -69,8 +72,6 @@ bool Map::move(Robots &robots, int robot, int move) {
   Position position = robots.positions[robot];
   bool moved = false;
   bool isMoving = true;
-  // std::cout << "Move: " << move << " "  << position.x << " " << position.y <<
-  // std::endl;
 
   while (isMoving) {
     if (data[position.x][position.y] & move) {
@@ -104,21 +105,20 @@ bool Map::move(Robots &robots, int robot, int move) {
   return moved;
 }
 
+// Comparing two positions
 bool Position::operator==(const Position &other) {
   return x == other.x && y == other.y;
 }
 
-/**
- * A possible move and its result
- */
+// A possible move and its result
 struct Move {
   int robot;
   int move;
   Robots result;
 };
 
+// Gives all the possible moves, given an initial position, uses some cache
 std::unordered_map<Robots, std::vector<Move>, KeyHasher> possibleMovesCache;
-
 std::vector<Move> possibleMoves(Map &map, Robots &robots) {
 
   if (!possibleMovesCache.count(robots)) {
@@ -144,6 +144,7 @@ std::vector<Move> possibleMoves(Map &map, Robots &robots) {
   return possibleMovesCache[robots];
 }
 
+// Comparing two robots, this is important for the hasher (unordered_map)
 bool Robots::operator==(const Robots &other) const {
   for (int k = 0; k < ROBOT_COUNTS; k++) {
     if (positions[k].x != other.positions[k].x ||
@@ -155,6 +156,7 @@ bool Robots::operator==(const Robots &other) const {
   return true;
 }
 
+// Print a given move on the screen
 void printMove(int robot, int move) {
   std::cout << "Robot: ";
   if (robot == ROBOT_RED)
@@ -179,12 +181,16 @@ void printMove(int robot, int move) {
   std::cout << std::endl;
 }
 
+// Previous state link is the move that was made before reaching a given state, along with
+// the previous state we were in
 struct PreviousStateLink {
   int lastRobot;
   int lastMove;
   Robots lastRobots;
 };
 
+// Map connecting all possible robot state to the previous state where it come from.
+// Since this is a breadth-first search, it is also linked to the optimal last move
 std::unordered_map<Robots, PreviousStateLink, KeyHasher> previousStates;
 
 void printSolution(PreviousStateLink s) {
@@ -194,7 +200,8 @@ void printSolution(PreviousStateLink s) {
   }
 }
 
-std::vector<Robots> solve(Map &map, int robot, std::vector<Robots> lastStage) {
+// Perform a "solve wave" (one level of the breadth-first search)
+std::vector<Robots> solveWave(Map &map, int robot, std::vector<Robots> lastStage) {
   std::vector<Robots> newRobots;
 
   for (Robots robots : lastStage) {
@@ -219,6 +226,8 @@ std::vector<Robots> solve(Map &map, int robot, std::vector<Robots> lastStage) {
   return newRobots;
 }
 
+// Doing the solve, calling the solveWave method that does one move to one another
+// iteration
 std::vector<Robots> solve(Map &map, int robot) {
   std::vector<Robots> positions;
   positions.push_back(map.initialRobots);
@@ -231,7 +240,7 @@ std::vector<Robots> solve(Map &map, int robot) {
     std::cout << "Trying for " << moves << " moves (" << positions.size() << ")"
               << std::endl;
     moves += 1;
-    positions = solve(map, robot, positions);
+    positions = solveWave(map, robot, positions);
   }
 }
 } // namespace RobotRicochet

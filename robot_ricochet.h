@@ -9,9 +9,11 @@
 namespace RobotRicochet
 {
 
+// Map dimension
 #define MAP_WIDTH 16
 #define MAP_HEIGHT 16
 
+// Robots
 #define ROBOT_COUNTS 4
 #define ROBOT_RED 0
 #define ROBOT_GREEN 1
@@ -19,12 +21,14 @@ namespace RobotRicochet
 #define ROBOT_YELLOW 3
 #define ROBOT_ANY 4
 
+// Bit logic wall
 #define MAP_NONE 0
 #define MAP_LEFT (1 << 0)
 #define MAP_RIGHT (1 << 1)
 #define MAP_UP (1 << 2)
 #define MAP_DOWN (1 << 3)
 
+// What is on a specific box (only for initialization)
 #define MAP_ROBOT_NONE 0
 #define MAP_ROBOT_RED 1
 #define MAP_ROBOT_GREEN 2
@@ -32,17 +36,20 @@ namespace RobotRicochet
 #define MAP_ROBOT_YELLOW 4
 #define MAP_ROBOT_TARGET 5
 
+// A simple position on the grid
 struct Position {
   int x, y;
 
   bool operator==(const Position &other);
 };
 
+// All the robots positions
 struct Robots {
   Position positions[ROBOT_COUNTS];
   bool operator==(const Robots &other) const;
 };
 
+// Key hasher for robots positions
 struct KeyHasher {
   std::size_t operator()(const Robots &robots) const {
     std::size_t cs = 0;
@@ -58,6 +65,7 @@ struct KeyHasher {
   }
 };
 
+// The map object representing the walls and initial robots
 struct Map {
   Map();
 
@@ -71,14 +79,7 @@ struct Map {
   bool move(Robots &robots, int robot, int move);
 };
 
-bool canReach(Map &map, Robots &robots, int robot, int moves, int depth = 0);
-
-extern int nbTries;
-extern std::unordered_map<Robots, int, KeyHasher> robotsToMove;
-
-
-
-std::vector<Robots> solve(Map &map, int robot, std::vector<Robots> lastStage);
+// Start the solve!
 std::vector<Robots> solve(Map &map, int robot);
 
 }
