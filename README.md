@@ -7,7 +7,7 @@ the layers, paint the walls etc. And export it to `map.png`.
 
 Then, use the following command to generate `map.bin`:
 
-    php parse.php > map.bin
+    php tools/parse.php > map.bin
 
 After, just compile:
 
