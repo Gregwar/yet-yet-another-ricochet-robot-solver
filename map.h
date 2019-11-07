@@ -1,8 +1,10 @@
 #pragma once
 
+#include <unordered_map>
 #include <map>
 #include <stdint.h>
 #include <vector>
+#include <iostream>
 
 #define MAP_WIDTH 16
 #define MAP_HEIGHT 16
@@ -70,3 +72,4 @@ struct Map {
 bool canReach(Map &map, Robots &robots, int robot, int moves, int depth = 0);
 
 extern int nbTries;
+extern std::unordered_map<Robots, int, KeyHasher> robotsToMove;

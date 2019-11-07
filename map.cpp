@@ -1,8 +1,8 @@
 #include "map.h"
 #include <iostream>
 #include <map>
-#include <unordered_map>
 #include <stdio.h>
+#include <unordered_map>
 
 Map::Map() {}
 
@@ -120,7 +120,6 @@ bool Robots::operator<(const Robots &other) const {
   return false;
 }
 
-int soluce = 0;
 int nbTries = 0;
 
 struct Move {
@@ -159,19 +158,18 @@ std::vector<Move> possibleMoves(Map &map, Robots &robots) {
 
 bool canReach(Map &map, Robots &robots, int robot, int moves, int depth) {
   nbTries++;
-  
+
+  if (robotsToMove.count(robots) && robotsToMove[robots] < depth) {
+    return false;
+  }
+  robotsToMove[robots] = depth;
+
   if (moves > 0) {
     for (Move move : possibleMoves(map, robots)) {
       if (moves == 1 && move.robot != robot && robot != ROBOT_ANY) {
         // Only one move is remaining, we can only use the final robot
         continue;
       }
-
-      if (robotsToMove.count(move.result) &&
-          robotsToMove[move.result] < depth) {
-        continue;
-      }
-      robotsToMove[move.result] = depth;
 
       bool reached = false;
       if (robot == ROBOT_ANY) {
@@ -180,13 +178,8 @@ bool canReach(Map &map, Robots &robots, int robot, int moves, int depth) {
         reached = (move.result.positions[robot] == map.target);
       }
 
-      if (reached) {
-        soluce++;
-      }
-
       if ((reached ||
-           canReach(map, move.result, robot, moves - 1, depth + 1)) &&
-          (soluce == 1)) {
+           canReach(map, move.result, robot, moves - 1, depth + 1))) {
         std::cout << "Robot: ";
         if (move.robot == ROBOT_RED)
           std::cout << "red";
@@ -216,15 +209,13 @@ bool canReach(Map &map, Robots &robots, int robot, int moves, int depth) {
   return false;
 }
 
-bool Robots::operator==(const Robots &other) const
-{
-    for (int k=0; k<ROBOT_COUNTS; k++) {
-        if (positions[k].x != other.positions[k].x || 
-        positions[k].y != other.positions[k].y
-        ) {
-            return false;
-        }
+bool Robots::operator==(const Robots &other) const {
+  for (int k = 0; k < ROBOT_COUNTS; k++) {
+    if (positions[k].x != other.positions[k].x ||
+        positions[k].y != other.positions[k].y) {
+      return false;
     }
+  }
 
-    return true;
+  return true;
 }
