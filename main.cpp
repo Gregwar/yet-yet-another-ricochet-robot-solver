@@ -5,10 +5,8 @@
 int main()
 {
     RobotRicochet::Map map;
-
     map.readFromFile("map.bin");
-    map.print();
     RobotRicochet::Robots robots = map.initialRobots;
 
-    solve(map, ROBOT_GREEN);
+    RobotRicochet::solve(map, ROBOT_GREEN);
 }

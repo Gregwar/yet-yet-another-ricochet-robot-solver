@@ -11,7 +11,7 @@ Map::Map() {}
 void Map::readFromFile(const char *filename) {
   FILE *f = fopen(filename, "rb");
   if (f) {
-    if (fread(data, MAP_WIDTH, MAP_HEIGHT, f) != MAP_WIDTH*MAP_HEIGHT) {
+    if (fread(data, MAP_WIDTH, MAP_HEIGHT, f) != MAP_HEIGHT) {
         std::cerr << "Can't load map!" << std::endl;
         exit(0);
     }
@@ -215,7 +215,7 @@ std::vector<Robots> solveWave(Map &map, int robot, std::vector<Robots> lastStage
         previousStates[move.result] = s;
 
         if (move.result.positions[robot] == map.target) {
-          std::cout << "Found a solution:" << std::endl;
+          std::cout << std::endl << "* Found a solution:" << std::endl;
           printSolution(s);
           exit(0);
         }
@@ -237,7 +237,7 @@ std::vector<Robots> solve(Map &map, int robot) {
 
   int moves = 1;
   while (true) {
-    std::cout << "Trying for " << moves << " moves (" << positions.size() << ")"
+    std::cout << "* Trying for " << moves << " moves (" << positions.size() << ")"
               << std::endl;
     moves += 1;
     positions = solveWave(map, robot, positions);
