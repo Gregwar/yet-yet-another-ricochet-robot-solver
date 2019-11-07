@@ -6,7 +6,7 @@
 #include <vector>
 #include <iostream>
 
-namespace RobotRicochet
+namespace RicochetRobot
 {
 
 // Map dimension

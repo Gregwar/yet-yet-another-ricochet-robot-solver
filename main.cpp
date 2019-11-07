@@ -1,12 +1,12 @@
 #include <iostream>
 #include <stdio.h>
-#include "robot_ricochet.h"
+#include "ricochet_robot.h"
 
 int main()
 {
-    RobotRicochet::Map map;
+    RicochetRobot::Map map;
     map.readFromFile("map.bin");
-    RobotRicochet::Robots robots = map.initialRobots;
+    RicochetRobot::Robots robots = map.initialRobots;
 
-    RobotRicochet::solve(map, ROBOT_GREEN);
+    RicochetRobot::solve(map, ROBOT_GREEN);
 }

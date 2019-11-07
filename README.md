@@ -1,4 +1,4 @@
-# Yet yet yet another Robot Ricochet solver :-)
+# Yet yet another ricochet robot
 
 ## How it works ?
 

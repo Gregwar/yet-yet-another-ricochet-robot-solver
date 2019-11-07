@@ -1,10 +1,10 @@
-#include "robot_ricochet.h"
+#include "ricochet_robot.h"
 #include <iostream>
 #include <map>
 #include <stdio.h>
 #include <unordered_map>
 
-namespace RobotRicochet {
+namespace RicochetRobot {
 
 Map::Map() {}
 
@@ -243,4 +243,4 @@ std::vector<Robots> solve(Map &map, int robot) {
     positions = solveWave(map, robot, positions);
   }
 }
-} // namespace RobotRicochet
+} // namespace RicochetRobot
